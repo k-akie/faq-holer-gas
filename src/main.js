@@ -1,22 +1,6 @@
-const FAQ_SHEET = 'faq';
-const FAQ_COLUMN_QUESTION = 1;
-const FAQ_COLUMN_ANSWER = 2;
-const FAQ_COLUMN_KEYWORDS = 3;
-const FAQ_COLUMN_ID = 4;
-const FAQ_COLUMN_ADDDATE = 5;
-
-const CONTENT_SHEET = 'content';
-const HISTORY_SHEET = 'history';
 const CODE_BLOCK = "```";
 
-/** ファイルを開いたときの処理 */
-function onOpen() {
-  const menu = SpreadsheetApp.getUi().createMenu('FAQ-BOT');
-  menu.addItem('FAQ解析(faq -> content)', 'analyzeFaqAll');
-  menu.addToUi();
-}
-
-/** 入り口 */
+/** 入り口(GAS Webアプリとしての入り口) */
 function doPost(e) {
     const response_url = e.parameter.response_url;
     const text = e.parameter.text.toString();
@@ -80,30 +64,6 @@ function analyzeFaq(keywords, trigger_id){
     addRange.setValues([addData]);
   }
 }
-/** 
- * 検索用FAQデータを更新(すべて) 
- * faqシート(コマンドや手で追加・更新がありうる) -> contentシート(スクリプトで上書き更新する)
- */
-function analyzeFaqAll(){
-  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONTENT_SHEET);
-  contentSheet.getRange(2, 1, contentSheet.getLastRow(), 10).clear(); // 10は適当
-
-  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FAQ_SHEET);
-  // varidation
-  const keys = faqSheet.getRange(2, FAQ_COLUMN_ID, faqSheet.getLastRow()-1, 1).getValues().map(item => item[0]);
-  const keySet = new Set(keys);
-  if(keys.length != new Set(keys).size){
-    Browser.msgBox(`「${FAQ_SHEET}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
-    return;
-  }
-
-  for(var rowNo = 2; rowNo <= faqSheet.getLastRow(); rowNo++){
-    const inputData = faqSheet.getRange(rowNo, FAQ_COLUMN_KEYWORDS, 1, 2).getValues()[0];
-    const keywords = inputData[0].toString();
-    const trigger_id = inputData[1].toString();
-    analyzeFaq(keywords, trigger_id);
-  }
-}
 
 /** 質問履歴を登録 */
 function addHistory(q_text, trigger_id){
@@ -132,7 +92,7 @@ function searchFaq(q_text){
     return ['not found'];
   }
 
-  // もっともヒットしているFAQを特定
+  // もっともヒットしているFAQ_IDを特定
   const grouped = results.reduce((pre, cur) => {
     const id = cur[1];
     if (!pre.has(id)) pre.set(id, 0);
