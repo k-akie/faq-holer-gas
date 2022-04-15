@@ -13,7 +13,9 @@ https://github.com/google/clasp
 clasp push
 
 # デプロイ
-clasp deploy 
+## デプロイIDを確認
+clasp deployments
+clasp deploy --deploymentId <id> --description <description>
 
 # WEBエディターを開く
 clasp open

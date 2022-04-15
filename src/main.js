@@ -4,7 +4,7 @@ const CODE_BLOCK = "```";
 function doPost(e) {
     const response_url = e.parameter.response_url;
     const text = e.parameter.text.toString();
-    ack(response_url, '...確認中...'); // いったんSlackに応答を返す
+    ack(response_url); // いったんSlackに応答を返す
 
     // https://api.slack.com/interactivity/slash-commands
     if(e.parameter.command === '/faq-add-gas') {
@@ -19,23 +19,22 @@ function doPost(e) {
       const trigger_id = e.parameter.trigger_id.toString();
       addFaq(q_text, a_text, keywords, trigger_id);
       analyzeFaq(keywords, trigger_id);
-      return ContentService.createTextOutput(
-        `FAQを登録しました :ok_woman:${CODE_BLOCK}\nQ. ${q_text}\nA. ${a_text}\n(${keywords})${CODE_BLOCK}`
-        );
+      ack(response_url, `FAQを登録しました :writing_hand:${CODE_BLOCK}\nQ. ${q_text}\nA. ${a_text}\n(${keywords})${CODE_BLOCK}`);
     }
 
     if(e.parameter.command === '/faq-gas') {
       const answerData = searchFaq(text);
       if(answerData.length < FAQ_COLUMN_ID){
         addHistory(text, 'not found');
-        return ContentService.createTextOutput(
+        ack(response_url,
           `「${text}」という質問に近いFAQをが見つかりませんでした :bow:`+
           '\nキーワードを変えたら見つかるかもしれません'
           );
+          return ContentService.createTextOutput();
       }
       addHistory(text, answerData[FAQ_COLUMN_ID]);
-      return ContentService.createTextOutput(
-        `「${text}」という質問に近いFAQを紹介します`+
+      ack(response_url,
+        `「${text}」という質問に近いFAQを紹介します :point_up:`+
         `\n${CODE_BLOCK}Q. ${answerData[FAQ_COLUMN_QUESTION]}`+
         `\nA. ${answerData[FAQ_COLUMN_ANSWER]}${CODE_BLOCK}`
         );
@@ -116,16 +115,15 @@ function searchFaq(q_text){
 }
 
 /** Slackへの応答 */
-function ack(response_url, text){
+function ack(response_url, text = ''){
   const options = {
     method: "post",
     contentType: "application/json",
     muteHttpExceptions: true,
-    payload: `{"text": "${text}"}`
+    payload: `{"text": "${text}", "response_type": "in_channel"}`
   };
   try{
-    const response = UrlFetchApp.fetch(response_url, options);
-    console.log(response.toString());
+    UrlFetchApp.fetch(response_url, options);
   } catch(e){
     console.log(e);
   }
