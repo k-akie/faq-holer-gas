@@ -1,0 +1,54 @@
+display_information:
+  name: Faq-holer-gas
+  description: Faq-holer-gas
+  background_color: "#3353b5"
+  long_description: "あらかじめ登録したFAQとキーワードに基づいて、FAQを返します。\r
+
+    返事は必ずこのアプリのDMになります。\r
+
+    \r
+
+    FAQとキーワードはスプレッドシートに直接書き込むこともできます。\r
+
+    直接書き込んだ場合は、スプレッドシートのメニューから「FAQ解析」を実行します。\r
+
+    \r
+
+    ※GAS版での注意点※\r
+
+    キーワード抽出が簡易処理となっています\r
+
+    利用頻度が高いと処理がうまくいかない可能性があります\r
+
+    \r
+
+    ソースコード\r
+
+    https://github.com/k-akie/faq-holer-gas"
+features:
+  app_home:
+    home_tab_enabled: false
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
+  bot_user:
+    display_name: Faq-holer-gas
+    always_online: false
+  slash_commands:
+    - command: /faq-add
+      url:
+      description: FAQを登録
+      usage_hint: "[質問文] [回答文] [キーワード(カンマ区切り)]"
+      should_escape: false
+    - command: /faq
+      url:
+      description: FAQを探す
+      usage_hint: "[質問文]"
+      should_escape: false
+oauth_config:
+  scopes:
+    bot:
+      - commands
+settings:
+  org_deploy_enabled: false
+  socket_mode_enabled: false
+  token_rotation_enabled: false

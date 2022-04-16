@@ -7,10 +7,14 @@ function doPost(e) {
     ack(response_url); // いったんSlackに応答を返す
 
     // https://api.slack.com/interactivity/slash-commands
-    if(e.parameter.command === '/faq-add-gas') {
+    if(e.parameter.command === '/faq-add') {
+      // FIXME ダブルクォーテーションは1単語扱いする
       const input = text.split(' ');
       if(input.length != 3){
-        return ContentService.createTextOutput("`/faq-add-gas [質問文] [回答文] [キーワード(カンマ区切り)]`の形で入力してください");
+        return ContentService.createTextOutput(
+          "`/faq-add [質問文] [回答文] [キーワード(カンマ区切り)]`の形で入力してください\n\n"+
+          `/faq-add ${text}`
+          );
       }
       const q_text = input[0];
       const a_text = input[1];
@@ -22,13 +26,14 @@ function doPost(e) {
       ack(response_url, `FAQを登録しました :writing_hand:${CODE_BLOCK}\nQ. ${q_text}\nA. ${a_text}\n(${keywords})${CODE_BLOCK}`);
     }
 
-    if(e.parameter.command === '/faq-gas') {
+    if(e.parameter.command === '/faq') {
       const answerData = searchFaq(text);
       if(answerData.length < FAQ_COLUMN_ID){
         addHistory(text, 'not found');
         ack(response_url,
           `「${text}」という質問に近いFAQをが見つかりませんでした :bow:`+
-          '\nキーワードを変えたら見つかるかもしれません'
+          '\nキーワードを変えたら見つかるかもしれません'+
+          '\n送り仮名をなくしたり、熟語に言い換えたりしてみてください'
           );
           return ContentService.createTextOutput();
       }
