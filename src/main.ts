@@ -1,5 +1,5 @@
 import { commandParamSplit } from "./slack";
-import { CONTENT_SHEET, FAQ_COLUMN_ANSWER, FAQ_COLUMN_ID, FAQ_COLUMN_QUESTION, FAQ_SHEET, HISTORY_SHEET } from "./spreadSheet";
+import { FAQ_COLUMN_ANSWER, FAQ_COLUMN_ID, FAQ_COLUMN_QUESTION, SheetName } from "./spreadSheet";
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
@@ -56,7 +56,7 @@ function doPost(e: any) {
 /** FAQデータを追加 */
 function addFaq(q_text: string, a_text: string, keywords: string, trigger_id: string){
   const data = [q_text, a_text, keywords, trigger_id, new Date()];
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FAQ_SHEET);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
   if(sheet == null) return; // FIXME エラーハンドリングする
   const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, data.length);
   dataRange.setValues([data]);
@@ -64,7 +64,7 @@ function addFaq(q_text: string, a_text: string, keywords: string, trigger_id: st
 
 /** 検索用FAQデータを更新 */
 export function analyzeFaq(keywords: string, trigger_id: string){
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONTENT_SHEET);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.CONTENT);
   if(sheet == null) return; // FIXME エラーハンドリングする
 
   const keywordArray = keywords.split(',');
@@ -78,7 +78,7 @@ export function analyzeFaq(keywords: string, trigger_id: string){
 /** 質問履歴を登録 */
 function addHistory(q_text: string, trigger_id: string){
   const data = [q_text, trigger_id, new Date()];
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HISTORY_SHEET);
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.HISTORY);
   if(sheet == null) return; // FIXME エラーハンドリングする
   const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, data.length);
   dataRange.setValues([data]);
@@ -93,7 +93,7 @@ function searchFaq(q_text: string): string[] {
   if (keywordArray == null) return []; // FIXME エラーハンドリングする
 
   // キーワードからFAQを探す
-  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONTENT_SHEET);
+  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.CONTENT);
   if(contentSheet == null) return []; // FIXME エラーハンドリングする
   const fullDatas = contentSheet.getDataRange().getValues();
   const results: string[] = [];
@@ -116,7 +116,7 @@ function searchFaq(q_text: string): string[] {
   const trigger_id = sorted[0][0];
 
   // trigger_idからFAQを取得
-  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FAQ_SHEET);
+  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
   if(faqSheet == null) return []; // FIXME エラーハンドリングする
   const searchRange = faqSheet.getRange(2, FAQ_COLUMN_ID, faqSheet.getLastRow());
   const finder = searchRange.createTextFinder(trigger_id);

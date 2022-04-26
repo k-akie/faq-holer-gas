@@ -2,15 +2,19 @@ import { analyzeFaq } from "./main";
 
 export const APP_NAME = 'FAQ-BOT';
 
-export const FAQ_SHEET = 'faq';
+export const SheetName = {
+  FAQ: 'faq',
+  CONTENT: 'content', 
+  HISTORY: 'history',
+} as const;
+type SheetName = typeof SheetName[keyof typeof SheetName]
+const AllSheets = Object.values(SheetName);
+
 export const FAQ_COLUMN_QUESTION = 1;
 export const FAQ_COLUMN_ANSWER = 2;
 export const FAQ_COLUMN_KEYWORDS = 3;
 export const FAQ_COLUMN_ID = 4;
 export const FAQ_COLUMN_ADDDATE = 5;
-
-export const CONTENT_SHEET = 'content';
-export const HISTORY_SHEET = 'history';
 
 /** ファイルを開いたときの処理 */
 function onOpen() {
@@ -20,21 +24,25 @@ function onOpen() {
   menu.addToUi();
 }
 
+function insertLineData(sheetName: SheetName) {
+
+}
+
 /**
  * 検索用FAQデータを更新(すべて)
  * faqシート(コマンドや手で追加・更新がありうる) -> contentシート(スクリプトで上書き更新する)
  */
 function analyzeFaqAll(){
-  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONTENT_SHEET);
+  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.CONTENT);
   if (contentSheet == null) return; // FIXME エラーハンドリングする
   contentSheet.getRange(2, 1, contentSheet.getLastRow(), 10).clear(); // 10は適当
 
-  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FAQ_SHEET);
+  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
   if (faqSheet == null) return; // FIXME エラーハンドリングする
   // varidation
   const keys = faqSheet.getRange(2, FAQ_COLUMN_ID, faqSheet.getLastRow()-1, 1).getValues().map(item => item[0]);
   if(keys.length != new Set(keys).size){
-    Browser.msgBox(`「${FAQ_SHEET}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
+    Browser.msgBox(`「${SheetName.FAQ}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
     return;
   }
 
@@ -49,12 +57,13 @@ function analyzeFaqAll(){
 function initialize() {
   const book = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
-  const requireSheetName = [FAQ_SHEET, CONTENT_SHEET, HISTORY_SHEET];
+
+  
 
   {
     const response = ui.alert(
       `${APP_NAME}用のシートを作成します\n`+
-      `${requireSheetName.join(', ')}\n\n`+
+      `${AllSheets.join(', ')}\n\n`+
       '※既に同じ名前のシートがある場合、シートが再作成されます\n'
       , ui.ButtonSet.OK_CANCEL);
     if(response != ui.Button.OK){
@@ -68,13 +77,13 @@ function initialize() {
 
   {
     const sheets = book.getSheets();
-    if(sheets.length == requireSheetName.length){
+    if(sheets.length == AllSheets.length){
       return;
     }
     const response = ui.alert(`${APP_NAME}に不要なシートを削除しますか？`, ui.ButtonSet.YES_NO);
     if(response == ui.Button.YES){
       for(const sheet of sheets){
-        if(requireSheetName.includes(sheet.getName())){
+        if(AllSheets.includes(sheet.getName() as SheetName)){
           continue;
         }
         book.deleteSheet(sheet);
@@ -84,12 +93,12 @@ function initialize() {
 }
 
 function createSheetFaq(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(FAQ_SHEET);
+    const oldSheet = book.getSheetByName(SheetName.FAQ);
     if(oldSheet){
       book.deleteSheet(oldSheet);
     }
     
-    const sheet = book.insertSheet(FAQ_SHEET);
+    const sheet = book.insertSheet(SheetName.FAQ);
     const header = ['質問文', '回答文', 'キーワード', 'ID', '登録日時'];
     const dataRange = sheet.getRange(1, 1, 1, header.length);
     dataRange.setValues([header]);
@@ -97,12 +106,12 @@ function createSheetFaq(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
     sheet.getRange(2, FAQ_COLUMN_ADDDATE, 1000, 1).setNumberFormat("yyyy/mm/dd h:mm:ss");
 }
 function createSheetContent(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(CONTENT_SHEET);
+    const oldSheet = book.getSheetByName(SheetName.CONTENT);
     if(oldSheet){
       book.deleteSheet(oldSheet);
     }
 
-    const sheet = book.insertSheet(CONTENT_SHEET);
+    const sheet = book.insertSheet(SheetName.CONTENT);
     const header = ['keyword', 'ID'];
     const dataRange = sheet.getRange(1, 1, 1, header.length);
     dataRange.setValues([header]);
@@ -110,12 +119,12 @@ function createSheetContent(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
     protection.removeEditors(protection.getEditors());
 }
 function createSheetHistory(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(HISTORY_SHEET);
+    const oldSheet = book.getSheetByName(SheetName.HISTORY);
     if(oldSheet){
       book.deleteSheet(oldSheet);
     }
 
-    const sheet = book.insertSheet(HISTORY_SHEET);
+    const sheet = book.insertSheet(SheetName.HISTORY);
     const header = ['質問文', '回答ID', '質問日時'];
     const dataRange = sheet.getRange(1, 1, 1, header.length);
     dataRange.setValues([header]);
