@@ -1,5 +1,5 @@
 import { commandParamSplit } from "./slack";
-import { FaqColumn, SheetName } from "./spreadSheet";
+import { FaqColumn, getSheetByName, insertLineData, SheetName } from "./spreadSheet";
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
@@ -56,32 +56,22 @@ function doPost(e: any) {
 /** FAQデータを追加 */
 function addFaq(q_text: string, a_text: string, keywords: string, trigger_id: string){
   const data = [q_text, a_text, keywords, trigger_id, new Date()];
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
-  if(sheet == null) return; // FIXME エラーハンドリングする
-  const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, data.length);
-  dataRange.setValues([data]);
+  insertLineData(SheetName.FAQ, data);
 }
 
 /** 検索用FAQデータを更新 */
 export function analyzeFaq(keywords: string, trigger_id: string){
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.CONTENT);
-  if(sheet == null) return; // FIXME エラーハンドリングする
-
   const keywordArray = keywords.split(',');
   for(const keyword of keywordArray){
     const addData = [keyword, trigger_id];
-    const addRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, addData.length);
-    addRange.setValues([addData]);
+    insertLineData(SheetName.CONTENT, addData); // for文の中でgetSheetByNameするのは良くないかも
   }
 }
 
 /** 質問履歴を登録 */
 function addHistory(q_text: string, trigger_id: string){
   const data = [q_text, trigger_id, new Date()];
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.HISTORY);
-  if(sheet == null) return; // FIXME エラーハンドリングする
-  const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, data.length);
-  dataRange.setValues([data]);
+  insertLineData(SheetName.HISTORY, data);
 }
 
 /** 質問文に適したFAQを見つける */

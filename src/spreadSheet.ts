@@ -26,8 +26,18 @@ function onOpen() {
   menu.addToUi();
 }
 
-function insertLineData(sheetName: SheetName) {
+/** シート取得 */
+function getSheetByName(sheetName: SheetName): GoogleAppsScript.Spreadsheet.Sheet {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  if(sheet == null) throw Error(`「${sheetName}」というシートが見つかりません`);
+  return sheet;
+}
 
+/** 指定シートの最終行にデータを追加する */
+export function insertLineData(sheetName: SheetName, lineData: (string | number | Date)[]) {
+  const sheet = getSheetByName(sheetName);
+  const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, lineData.length);
+  dataRange.setValues([lineData]);
 }
 
 /**
