@@ -1,14 +1,19 @@
+import { commandParamSplit } from "./slack";
+import { CONTENT_SHEET, FAQ_COLUMN_ANSWER, FAQ_COLUMN_ID, FAQ_COLUMN_QUESTION, FAQ_SHEET, HISTORY_SHEET } from "./spreadSheet";
+import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
+
 const CODE_BLOCK = "```";
 
 /** 入り口(GAS Webアプリとしての入り口) */
-function doPost(e) {
+function doPost(e: any) {
     const response_url = e.parameter.response_url;
     const text = e.parameter.text.toString();
     ack(response_url); // いったんSlackに応答を返す
 
     // https://api.slack.com/interactivity/slash-commands
     if(e.parameter.command === '/faq-add') {
-      const input = spliter(text);
+      // FIXME ダブルクォーテーションは1単語扱いする
+      const input = commandParamSplit(text);
       if(input.length != 3){
         return ContentService.createTextOutput(
           "`/faq-add [質問文] [回答文] [キーワード(カンマ区切り)]`の形で入力してください\n\n"+
@@ -49,19 +54,21 @@ function doPost(e) {
 }
 
 /** FAQデータを追加 */
-function addFaq(q_text, a_text, keywords, trigger_id){
+function addFaq(q_text: string, a_text: string, keywords: string, trigger_id: string){
   const data = [q_text, a_text, keywords, trigger_id, new Date()];
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FAQ_SHEET);
+  if(sheet == null) return; // FIXME エラーハンドリングする
   const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, data.length);
   dataRange.setValues([data]);
 }
 
 /** 検索用FAQデータを更新 */
-function analyzeFaq(keywords, trigger_id){
+export function analyzeFaq(keywords: string, trigger_id: string){
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONTENT_SHEET);
+  if(sheet == null) return; // FIXME エラーハンドリングする
 
   const keywordArray = keywords.split(',');
-  for(keyword of keywordArray){
+  for(const keyword of keywordArray){
     const addData = [keyword, trigger_id];
     const addRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, addData.length);
     addRange.setValues([addData]);
@@ -69,25 +76,28 @@ function analyzeFaq(keywords, trigger_id){
 }
 
 /** 質問履歴を登録 */
-function addHistory(q_text, trigger_id){
+function addHistory(q_text: string, trigger_id: string){
   const data = [q_text, trigger_id, new Date()];
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(HISTORY_SHEET);
+  if(sheet == null) return; // FIXME エラーハンドリングする
   const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, data.length);
   dataRange.setValues([data]);
 }
 
 /** 質問文に適したFAQを見つける */
-function searchFaq(q_text){
+function searchFaq(q_text: string): string[] {
   // 質問文からキーワードを抽出(簡易形態素解析)
   // https://takuya-1st.hatenablog.jp/entry/2016/04/02/145017
   const r=/[一-龠]+|[ぁ-ん]+|[ァ-ヴー]+|[a-zA-Z0-9\-]+|[ａ-ｚＡ-Ｚ０-９]+/g;
   const keywordArray = q_text.match(r);
+  if (keywordArray == null) return []; // FIXME エラーハンドリングする
 
   // キーワードからFAQを探す
   const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(CONTENT_SHEET);
+  if(contentSheet == null) return []; // FIXME エラーハンドリングする
   const fullDatas = contentSheet.getDataRange().getValues();
-  const results = [];
-  for(keyword of keywordArray){
+  const results: string[] = [];
+  for(const keyword of keywordArray){
     const datas = fullDatas.filter(data => data[0] == keyword);
     Array.prototype.push.apply(results, datas);
   }
@@ -107,6 +117,7 @@ function searchFaq(q_text){
 
   // trigger_idからFAQを取得
   const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(FAQ_SHEET);
+  if(faqSheet == null) return []; // FIXME エラーハンドリングする
   const searchRange = faqSheet.getRange(2, FAQ_COLUMN_ID, faqSheet.getLastRow());
   const finder = searchRange.createTextFinder(trigger_id);
   const first = finder.findNext();
@@ -119,15 +130,15 @@ function searchFaq(q_text){
 }
 
 /** Slackへの応答 */
-function ack(response_url, text = ''){
-  const options = {
+function ack(response_url: string, text = ''){
+  const params: URLFetchRequestOptions = {
     method: "post",
     contentType: "application/json",
     muteHttpExceptions: true,
     payload: `{"text": "${text}", "response_type": "in_channel"}`
   };
   try{
-    UrlFetchApp.fetch(response_url, options);
+    UrlFetchApp.fetch(response_url, params);
   } catch(e){
     console.log(e);
   }

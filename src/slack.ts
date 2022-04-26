@@ -1,14 +1,8 @@
-/**
- * Slackのスラッシュコマンドの引数を分割する
- * @param {string} text Slackのスラッシュコマンドの引数
- * @returns {string}
- */
-export function spliter(text){
-    console.log(text);
+export function commandParamSplit(text: string): string[]{
     var result = [];
     var temp = '';
     var oneLine = false;
-    for (char of text){
+    for (const char of text){
         if(char == ' '){
             if(oneLine) {
                 temp += char;
@@ -38,5 +32,5 @@ export function spliter(text){
         temp = '';
     }
     
-    console.log(result);
+    return result;
 }
