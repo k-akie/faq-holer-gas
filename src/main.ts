@@ -1,5 +1,5 @@
 import { commandParamSplit } from "./slack";
-import { FaqColumn, insertLineData, selectData, SheetName } from "./spreadSheet";
+import { FaqColumn, insertLineData, selectAllData, SheetName } from "./spreadSheet";
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
@@ -83,7 +83,7 @@ function searchFaq(q_text: string): string[] {
   if (keywordArray == null) return []; // FIXME エラーハンドリングする
 
   // キーワードからFAQを探す
-  const fullDatas = selectData(SheetName.CONTENT);
+  const fullDatas = selectAllData(SheetName.CONTENT);
   const results: string[] = [];
   for(const keyword of keywordArray){
     const datas = fullDatas.filter(data => data[0] == keyword);
@@ -103,18 +103,13 @@ function searchFaq(q_text: string): string[] {
   const sorted = [...grouped.entries()].sort((a, b) => b[1] - a[1]);
   const trigger_id = sorted[0][0];
 
-  // trigger_idからFAQを取得
-  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
-  if(faqSheet == null) return []; // FIXME エラーハンドリングする
-  const searchRange = faqSheet.getRange(2, FaqColumn.ID, faqSheet.getLastRow());
-  const finder = searchRange.createTextFinder(trigger_id);
-  const first = finder.findNext();
-  if(!first) {
+  // trigger_idからFAQを取得  
+  const faqData = selectAllData(SheetName.FAQ);
+  const filterdFaq = faqData.filter(value => value[0] == trigger_id);
+  if(filterdFaq.length == 0) {
     return [`not found(${trigger_id})`];
   }
-  const index = first.getRowIndex();
-  const answerData = faqSheet.getRange(index, 1, 1, FaqColumn.ID).getValues()[0];
-  return ['NOP'].concat(answerData);
+  return ['NOP'].concat(filterdFaq[0]);
 }
 
 /** Slackへの応答 */

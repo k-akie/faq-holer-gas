@@ -41,7 +41,7 @@ export function insertLineData(sheetName: SheetName, lineData: (string | number 
 }
 
 /** 指定シートの全データを取得する */
-export function selectData(sheetName: SheetName): any[][] {
+export function selectAllData(sheetName: SheetName): any[][] {
   const sheet = getSheetByName(sheetName);
   return sheet.getDataRange().getValues();
 }
@@ -75,8 +75,6 @@ function analyzeFaqAll(){
 function initialize() {
   const book = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();
-
-  
 
   {
     const response = ui.alert(
