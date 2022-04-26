@@ -10,11 +10,13 @@ export const SheetName = {
 type SheetName = typeof SheetName[keyof typeof SheetName]
 const AllSheets = Object.values(SheetName);
 
-export const FAQ_COLUMN_QUESTION = 1;
-export const FAQ_COLUMN_ANSWER = 2;
-export const FAQ_COLUMN_KEYWORDS = 3;
-export const FAQ_COLUMN_ID = 4;
-export const FAQ_COLUMN_ADDDATE = 5;
+export const FaqColumn = {
+  QUESTION: 1,
+  ANSWER: 2,
+  KEYWORDS: 3,
+  ID: 4,
+  ADDDATE: 5,
+}
 
 /** ファイルを開いたときの処理 */
 function onOpen() {
@@ -40,14 +42,14 @@ function analyzeFaqAll(){
   const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
   if (faqSheet == null) return; // FIXME エラーハンドリングする
   // varidation
-  const keys = faqSheet.getRange(2, FAQ_COLUMN_ID, faqSheet.getLastRow()-1, 1).getValues().map(item => item[0]);
+  const keys = faqSheet.getRange(2, FaqColumn.ID, faqSheet.getLastRow()-1, 1).getValues().map(item => item[0]);
   if(keys.length != new Set(keys).size){
     Browser.msgBox(`「${SheetName.FAQ}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
     return;
   }
 
   for(var rowNo = 2; rowNo <= faqSheet.getLastRow(); rowNo++){
-    const inputData = faqSheet.getRange(rowNo, FAQ_COLUMN_KEYWORDS, 1, 2).getValues()[0];
+    const inputData = faqSheet.getRange(rowNo, FaqColumn.KEYWORDS, 1, 2).getValues()[0];
     const keywords = inputData[0].toString();
     const trigger_id = inputData[1].toString();
     analyzeFaq(keywords, trigger_id);
@@ -103,7 +105,7 @@ function createSheetFaq(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
     const dataRange = sheet.getRange(1, 1, 1, header.length);
     dataRange.setValues([header]);
 
-    sheet.getRange(2, FAQ_COLUMN_ADDDATE, 1000, 1).setNumberFormat("yyyy/mm/dd h:mm:ss");
+    sheet.getRange(2, FaqColumn.ADDDATE, 1000, 1).setNumberFormat("yyyy/mm/dd h:mm:ss");
 }
 function createSheetContent(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
     const oldSheet = book.getSheetByName(SheetName.CONTENT);

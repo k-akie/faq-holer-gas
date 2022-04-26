@@ -1,5 +1,5 @@
 import { commandParamSplit } from "./slack";
-import { FAQ_COLUMN_ANSWER, FAQ_COLUMN_ID, FAQ_COLUMN_QUESTION, SheetName } from "./spreadSheet";
+import { FaqColumn, SheetName } from "./spreadSheet";
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
@@ -32,7 +32,7 @@ function doPost(e: any) {
 
     if(e.parameter.command === '/faq') {
       const answerData = searchFaq(text);
-      if(answerData.length < FAQ_COLUMN_ID){
+      if(answerData.length < FaqColumn.ID){
         addHistory(text, 'not found');
         ack(response_url,
           `「${text}」という質問に近いFAQをが見つかりませんでした :bow:`+
@@ -41,11 +41,11 @@ function doPost(e: any) {
           );
           return ContentService.createTextOutput();
       }
-      addHistory(text, answerData[FAQ_COLUMN_ID]);
+      addHistory(text, answerData[FaqColumn.ID]);
       ack(response_url,
         `「${text}」という質問に近いFAQを紹介します :point_up:`+
-        `\n${CODE_BLOCK}Q. ${answerData[FAQ_COLUMN_QUESTION]}`+
-        `\nA. ${answerData[FAQ_COLUMN_ANSWER]}${CODE_BLOCK}`
+        `\n${CODE_BLOCK}Q. ${answerData[FaqColumn.QUESTION]}`+
+        `\nA. ${answerData[FaqColumn.ANSWER]}${CODE_BLOCK}`
         );
     }
 
@@ -118,14 +118,14 @@ function searchFaq(q_text: string): string[] {
   // trigger_idからFAQを取得
   const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
   if(faqSheet == null) return []; // FIXME エラーハンドリングする
-  const searchRange = faqSheet.getRange(2, FAQ_COLUMN_ID, faqSheet.getLastRow());
+  const searchRange = faqSheet.getRange(2, FaqColumn.ID, faqSheet.getLastRow());
   const finder = searchRange.createTextFinder(trigger_id);
   const first = finder.findNext();
   if(!first) {
     return [`not found(${trigger_id})`];
   }
   const index = first.getRowIndex();
-  const answerData = faqSheet.getRange(index, 1, 1, FAQ_COLUMN_ID).getValues()[0];
+  const answerData = faqSheet.getRange(index, 1, 1, FaqColumn.ID).getValues()[0];
   return ['NOP'].concat(answerData);
 }
 
