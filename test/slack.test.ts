@@ -1,4 +1,4 @@
-import { commandParamSplit } from "../src_ts/slack";
+import { commandParamSplit } from "../src/slack";
 
 
 describe('commandParamSplit', () => {

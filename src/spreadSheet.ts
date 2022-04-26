@@ -1,6 +1,6 @@
 import { analyzeFaq } from "./main";
 
-export const APP_NAME = 'FAQ-BOT';
+const APP_NAME = 'FAQ-BOT';
 
 export const SheetName = {
   FAQ: 'faq',

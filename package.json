@@ -8,7 +8,8 @@
     "tsc": "npx tsc",
     "cp-json": "cpx ./src/appsscript.json ./dist/src",
     "build": "npm-run-all clean tsc cp-json",
-    "test": "jest"
+    "test": "jest",
+    "verify": "npm-run-all test build"
   },
   "dependencies": {
     "@google/clasp": "^2.4.1",
