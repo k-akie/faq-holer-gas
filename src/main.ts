@@ -1,5 +1,5 @@
 import { commandParamSplit } from "./slack";
-import { FaqColumn, getSheetByName, insertLineData, SheetName } from "./spreadSheet";
+import { FaqColumn, insertLineData, selectData, SheetName } from "./spreadSheet";
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
@@ -83,9 +83,7 @@ function searchFaq(q_text: string): string[] {
   if (keywordArray == null) return []; // FIXME エラーハンドリングする
 
   // キーワードからFAQを探す
-  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.CONTENT);
-  if(contentSheet == null) return []; // FIXME エラーハンドリングする
-  const fullDatas = contentSheet.getDataRange().getValues();
+  const fullDatas = selectData(SheetName.CONTENT);
   const results: string[] = [];
   for(const keyword of keywordArray){
     const datas = fullDatas.filter(data => data[0] == keyword);

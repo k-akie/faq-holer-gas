@@ -40,6 +40,12 @@ export function insertLineData(sheetName: SheetName, lineData: (string | number 
   dataRange.setValues([lineData]);
 }
 
+/** 指定シートの全データを取得する */
+export function selectData(sheetName: SheetName): any[][] {
+  const sheet = getSheetByName(sheetName);
+  return sheet.getDataRange().getValues();
+}
+
 /**
  * 検索用FAQデータを更新(すべて)
  * faqシート(コマンドや手で追加・更新がありうる) -> contentシート(スクリプトで上書き更新する)
