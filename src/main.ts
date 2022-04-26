@@ -1,5 +1,6 @@
 import { commandParamSplit } from "./slack";
 import { FaqColumn, insertLineData, selectAllData, SheetName } from "./spreadSheet";
+import { mostHits, serachByKeyword, textAnalyze } from "./seachFaq";
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
@@ -76,32 +77,16 @@ function addHistory(q_text: string, trigger_id: string){
 
 /** 質問文に適したFAQを見つける */
 function searchFaq(q_text: string): string[] {
-  // 質問文からキーワードを抽出(簡易形態素解析)
-  // https://takuya-1st.hatenablog.jp/entry/2016/04/02/145017
-  const r=/[一-龠]+|[ぁ-ん]+|[ァ-ヴー]+|[a-zA-Z0-9\-]+|[ａ-ｚＡ-Ｚ０-９]+/g;
-  const keywordArray = q_text.match(r);
-  if (keywordArray == null) return []; // FIXME エラーハンドリングする
-
   // キーワードからFAQを探す
+  const keywordArray = textAnalyze(q_text);
   const fullDatas = selectAllData(SheetName.CONTENT);
-  const results: string[] = [];
-  for(const keyword of keywordArray){
-    const datas = fullDatas.filter(data => data[0] == keyword);
-    Array.prototype.push.apply(results, datas);
-  }
+  const results = serachByKeyword(keywordArray, fullDatas);
   if(results.length == 0){
     return ['not found'];
   }
 
   // もっともヒットしているFAQ_IDを特定
-  const grouped = results.reduce((pre, cur) => {
-    const id = cur[1];
-    if (!pre.has(id)) pre.set(id, 0);
-    pre.set(id, pre.get(id) + 1);
-    return pre;
-  }, new Map());
-  const sorted = [...grouped.entries()].sort((a, b) => b[1] - a[1]);
-  const trigger_id = sorted[0][0];
+  const trigger_id = mostHits(results);
 
   // trigger_idからFAQを取得  
   const faqData = selectAllData(SheetName.FAQ);
