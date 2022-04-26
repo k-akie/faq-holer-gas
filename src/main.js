@@ -8,8 +8,7 @@ function doPost(e) {
 
     // https://api.slack.com/interactivity/slash-commands
     if(e.parameter.command === '/faq-add') {
-      // FIXME ダブルクォーテーションは1単語扱いする
-      const input = text.split(' ');
+      const input = spliter(text);
       if(input.length != 3){
         return ContentService.createTextOutput(
           "`/faq-add [質問文] [回答文] [キーワード(カンマ区切り)]`の形で入力してください\n\n"+
