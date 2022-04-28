@@ -1,5 +1,3 @@
 **/**
-!main.js
-!spreadSheet.js
-!slack.js
+!*.ts
 !appsscript.json
