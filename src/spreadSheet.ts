@@ -1,21 +1,24 @@
-import { analyzeFaq } from "./main";
+import { Analyze } from "./main";
 
 const APP_NAME = 'FAQ-BOT';
 
-export const SheetName = {
-  FAQ: 'faq',
-  CONTENT: 'content', 
-  HISTORY: 'history',
-} as const;
-type SheetName = typeof SheetName[keyof typeof SheetName]
-const AllSheets = Object.values(SheetName);
+export class Sheets {
+  static FAQ = 'faq';
+  static CONTENT = 'content';
+  static HISTORY = 'history';
+  
+  static all(): string[] {
+    return [Sheets.FAQ, Sheets.CONTENT, Sheets.HISTORY];
+  }
+}
+type SheetName = typeof Sheets.FAQ | typeof Sheets.CONTENT | typeof Sheets.HISTORY;
 
-export const FaqColumn = {
-  QUESTION: 1,
-  ANSWER: 2,
-  KEYWORDS: 3,
-  ID: 4,
-  ADDDATE: 5,
+export class FaqColumn {
+  static QUESTION = 1;
+  static ANSWER = 2;
+  static KEYWORDS = 3;
+  static ID = 4;
+  static ADDDATE = 5;
 }
 
 /** ファイルを開いたときの処理 */
@@ -33,17 +36,26 @@ function getSheetByName(sheetName: SheetName): GoogleAppsScript.Spreadsheet.Shee
   return sheet;
 }
 
-/** 指定シートの最終行にデータを追加する */
-export function insertLineData(sheetName: SheetName, lineData: (string | number | Date)[]) {
-  const sheet = getSheetByName(sheetName);
-  const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, lineData.length);
-  dataRange.setValues([lineData]);
-}
+export class Spread {
+  /** 指定シートの最終行に行データを追加する */
+  static insertLineData(sheetName: SheetName, lineData: (string | number | Date)[]) {
+    const sheet = getSheetByName(sheetName);
+    const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, 1, lineData.length);
+    dataRange.setValues([lineData]);
+  }
 
-/** 指定シートの全データを取得する */
-export function selectAllData(sheetName: SheetName): any[][] {
-  const sheet = getSheetByName(sheetName);
-  return sheet.getDataRange().getValues();
+  /** 指定シートの最終行に複数行データを追加する */
+  static insertData(sheetName: SheetName, data: (string | number | Date)[][]) {
+    const sheet = getSheetByName(sheetName);
+    const dataRange = sheet.getRange(sheet.getLastRow() + 1, 1, data.length, data[0].length);
+    dataRange.setValues(data);
+  }
+
+  /** 指定シートの全データを取得する */
+  static selectAllData(sheetName: SheetName): any[][] {
+    const sheet = getSheetByName(sheetName);
+    return sheet.getDataRange().getValues();
+  }
 }
 
 /**
@@ -51,16 +63,16 @@ export function selectAllData(sheetName: SheetName): any[][] {
  * faqシート(コマンドや手で追加・更新がありうる) -> contentシート(スクリプトで上書き更新する)
  */
 function analyzeFaqAll(){
-  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.CONTENT);
+  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(Sheets.CONTENT);
   if (contentSheet == null) return; // FIXME エラーハンドリングする
   contentSheet.getRange(2, 1, contentSheet.getLastRow(), 10).clear(); // 10は適当
 
-  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(SheetName.FAQ);
+  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(Sheets.FAQ);
   if (faqSheet == null) return; // FIXME エラーハンドリングする
   // varidation
   const keys = faqSheet.getRange(2, FaqColumn.ID, faqSheet.getLastRow()-1, 1).getValues().map(item => item[0]);
   if(keys.length != new Set(keys).size){
-    Browser.msgBox(`「${SheetName.FAQ}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
+    Browser.msgBox(`「${Sheets.FAQ}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
     return;
   }
 
@@ -68,7 +80,7 @@ function analyzeFaqAll(){
     const inputData = faqSheet.getRange(rowNo, FaqColumn.KEYWORDS, 1, 2).getValues()[0];
     const keywords = inputData[0].toString();
     const trigger_id = inputData[1].toString();
-    analyzeFaq(keywords, trigger_id);
+    Analyze.faq(keywords, trigger_id);
   }
 }
 
@@ -79,7 +91,7 @@ function initialize() {
   {
     const response = ui.alert(
       `${APP_NAME}用のシートを作成します\n`+
-      `${AllSheets.join(', ')}\n\n`+
+      `${Sheets.all().join(', ')}\n\n`+
       '※既に同じ名前のシートがある場合、シートが再作成されます\n'
       , ui.ButtonSet.OK_CANCEL);
     if(response != ui.Button.OK){
@@ -93,13 +105,13 @@ function initialize() {
 
   {
     const sheets = book.getSheets();
-    if(sheets.length == AllSheets.length){
+    if(sheets.length == Sheets.all.length){
       return;
     }
     const response = ui.alert(`${APP_NAME}に不要なシートを削除しますか？`, ui.ButtonSet.YES_NO);
     if(response == ui.Button.YES){
       for(const sheet of sheets){
-        if(AllSheets.includes(sheet.getName() as SheetName)){
+        if(Sheets.all().includes(sheet.getName() as SheetName)){
           continue;
         }
         book.deleteSheet(sheet);
@@ -109,12 +121,12 @@ function initialize() {
 }
 
 function createSheetFaq(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(SheetName.FAQ);
+    const oldSheet = book.getSheetByName(Sheets.FAQ);
     if(oldSheet){
       book.deleteSheet(oldSheet);
     }
     
-    const sheet = book.insertSheet(SheetName.FAQ);
+    const sheet = book.insertSheet(Sheets.FAQ);
     const header = ['質問文', '回答文', 'キーワード', 'ID', '登録日時'];
     const dataRange = sheet.getRange(1, 1, 1, header.length);
     dataRange.setValues([header]);
@@ -122,12 +134,12 @@ function createSheetFaq(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
     sheet.getRange(2, FaqColumn.ADDDATE, 1000, 1).setNumberFormat("yyyy/mm/dd h:mm:ss");
 }
 function createSheetContent(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(SheetName.CONTENT);
+    const oldSheet = book.getSheetByName(Sheets.CONTENT);
     if(oldSheet){
       book.deleteSheet(oldSheet);
     }
 
-    const sheet = book.insertSheet(SheetName.CONTENT);
+    const sheet = book.insertSheet(Sheets.CONTENT);
     const header = ['keyword', 'ID'];
     const dataRange = sheet.getRange(1, 1, 1, header.length);
     dataRange.setValues([header]);
@@ -135,12 +147,12 @@ function createSheetContent(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
     protection.removeEditors(protection.getEditors());
 }
 function createSheetHistory(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(SheetName.HISTORY);
+    const oldSheet = book.getSheetByName(Sheets.HISTORY);
     if(oldSheet){
       book.deleteSheet(oldSheet);
     }
 
-    const sheet = book.insertSheet(SheetName.HISTORY);
+    const sheet = book.insertSheet(Sheets.HISTORY);
     const header = ['質問文', '回答ID', '質問日時'];
     const dataRange = sheet.getRange(1, 1, 1, header.length);
     dataRange.setValues([header]);
