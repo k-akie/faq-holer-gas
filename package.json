@@ -10,13 +10,11 @@
     "test": "jest",
     "lint": "npx eslint **/*.ts",
     "lint:fix": "npx eslint --fix **/*.ts",
-    "verify": "npm-run-all test build"
-  },
-  "dependencies": {
-    "@google/clasp": "^2.4.1",
-    "@types/google-apps-script": "^1.0.46"
+    "verify": "npm-run-all -p test build"
   },
   "devDependencies": {
+    "@google/clasp": "^2.4.1",
+    "@types/google-apps-script": "^1.0.46",
     "@types/jest": "^27.4.1",
     "@types/node": "^16.11.32",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
