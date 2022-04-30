@@ -1,6 +1,7 @@
 import { Slack } from "./Slack";
 import { FaqColumn, Sheets, Spread } from "./spreadSheet";
 import { SearchFaq } from "./SearchFaq";
+// eslint-disable-next-line camelcase
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
@@ -19,11 +20,12 @@ interface PostEvent {
 }
 
 /** 入り口(GAS Webアプリとしての入り口) */
+// eslint-disable-next-line no-unused-vars
 function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
-    const response_url = e.parameter.response_url;
+    const responseUrl = e.parameter.response_url;
     const text = e.parameter.text;
     const command = e.parameter.command;
-    ack(response_url); // いったんSlackに応答を返す
+    ack(responseUrl); // いったんSlackに応答を返す
 
     // https://api.slack.com/interactivity/slash-commands
     if(command === '/faq-add') {
@@ -35,21 +37,21 @@ function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
           );
       }
 
-      const q_text = params[0];
-      const a_text = params[1];
+      const question = params[0];
+      const answer = params[1];
       const keywords = params[2];
 
-      const trigger_id = e.parameter.trigger_id.toString();
-      addFaq(q_text, a_text, keywords, trigger_id);
-      Analyze.faq(keywords, trigger_id);
-      ack(response_url, `FAQを登録しました :writing_hand:${CODE_BLOCK}\nQ. ${q_text}\nA. ${a_text}\n(${keywords})${CODE_BLOCK}`);
+      const triggerId = e.parameter.trigger_id.toString();
+      addFaq(question, answer, keywords, triggerId);
+      Analyze.faq(keywords, triggerId);
+      ack(responseUrl, `FAQを登録しました :writing_hand:${CODE_BLOCK}\nQ. ${question}\nA. ${answer}\n(${keywords})${CODE_BLOCK}`);
     }
 
     if(command === '/faq') {
       const answerData = searchFaq(text);
       if(answerData.length < FaqColumn.ID){
         addHistory(text, 'not found');
-        ack(response_url,
+        ack(responseUrl,
           `「${text}」という質問に近いFAQをが見つかりませんでした :bow:`+
           '\nキーワードを変えたら見つかるかもしれません'+
           '\n送り仮名をなくしたり、熟語に言い換えたりしてみてください'
@@ -58,7 +60,7 @@ function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
       }
 
       addHistory(text, answerData[FaqColumn.ID]);
-      ack(response_url,
+      ack(responseUrl,
         `「${text}」という質問に近いFAQを紹介します :point_up:`+
         `\n${CODE_BLOCK}Q. ${answerData[FaqColumn.QUESTION]}`+
         `\nA. ${answerData[FaqColumn.ANSWER]}${CODE_BLOCK}`
@@ -70,55 +72,55 @@ function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
 }
 
 /** FAQデータを追加 */
-function addFaq(q_text: string, a_text: string, keywords: string, trigger_id: string){
-  const data = [q_text, a_text, keywords, trigger_id, new Date()];
+function addFaq(question: string, answer: string, keywords: string, triggerId: string){
+  const data = [question, answer, keywords, triggerId, new Date()];
   Spread.insertLineData(Sheets.FAQ, data);
 }
 
 /** 検索用FAQデータを更新 */
 export class Analyze {
-  static faq(keywords: string, trigger_id: string){
+  static faq(keywords: string, triggerId: string){
     const keywordArray = keywords.split(',');
-    const addData = keywordArray.map(keyword => [keyword, trigger_id]);
+    const addData = keywordArray.map(keyword => [keyword, triggerId]);
     Spread.insertData(Sheets.CONTENT, addData);
   }
 }
 
 /** 質問履歴を登録 */
-function addHistory(q_text: string, trigger_id: string){
-  const data = [q_text, trigger_id, new Date()];
+function addHistory(question: string, triggerId: string){
+  const data = [question, triggerId, new Date()];
   Spread.insertLineData(Sheets.HISTORY, data);
 }
 
 /** 質問文に適したFAQを見つける */
-function searchFaq(q_text: string): string[] {
+function searchFaq(question: string): string[] {
   // キーワードからFAQを探す
-  const keywordArray = SearchFaq.textAnalyze(q_text);
+  const keywordArray = SearchFaq.textAnalyze(question);
   const fullDatas = Spread.selectAllData(Sheets.CONTENT);
   const results = SearchFaq.serachByKeyword(keywordArray, fullDatas);
 
   // もっともヒットしているFAQ_IDを特定
-  const trigger_id = SearchFaq.mostHits(results);
-  if(trigger_id.length == 0){
+  const triggerId = SearchFaq.mostHits(results);
+  if(triggerId.length == 0){
     return ['not found'];
   }
 
   // trigger_idからFAQを取得  
   const faqData = Spread.selectAllData(Sheets.FAQ);
-  const filterdFaq = faqData.filter(value => value[FaqColumn.ID - 1] == trigger_id);
+  const filterdFaq = faqData.filter(value => value[FaqColumn.ID - 1] == triggerId);
   if(filterdFaq.length == 0) {
-    return [`not found(${trigger_id})`];
+    return [`not found(${triggerId})`];
   }
   return ['NOP'].concat(filterdFaq[0]);
 }
 
 /** Slackへの応答 */
-function ack(response_url: string, text = ''){
+function ack(responseUrl: string, text = ''){
   const params: URLFetchRequestOptions = {
     method: "post",
     contentType: "application/json",
     muteHttpExceptions: true,
     payload: `{"text": "${text}", "response_type": "in_channel"}`
   };
-  UrlFetchApp.fetch(response_url, params);
+  UrlFetchApp.fetch(responseUrl, params);
 }

@@ -22,6 +22,7 @@ export class FaqColumn {
 }
 
 /** ファイルを開いたときの処理 */
+// eslint-disable-next-line no-unused-vars
 function onOpen() {
   const menu = SpreadsheetApp.getUi().createMenu(APP_NAME);
   menu.addItem('FAQ解析(faq -> content)', 'analyzeFaqAll');
@@ -62,6 +63,7 @@ export class Spread {
  * 検索用FAQデータを更新(すべて)
  * faqシート(コマンドや手で追加・更新がありうる) -> contentシート(スクリプトで上書き更新する)
  */
+// eslint-disable-next-line no-unused-vars
 function analyzeFaqAll(){
   // varidation
   const faqSheet = getSheetByName(Sheets.FAQ);
@@ -75,14 +77,15 @@ function analyzeFaqAll(){
   const contentSheet = getSheetByName(Sheets.CONTENT);
   contentSheet.getRange(2, 1, contentSheet.getLastRow(), 10).clear(); // 10は適当
 
-  for(var rowNo = 2; rowNo <= faqSheet.getLastRow(); rowNo++){
+  for(let rowNo = 2; rowNo <= faqSheet.getLastRow(); rowNo++){
     const inputData = faqSheet.getRange(rowNo, FaqColumn.KEYWORDS, 1, 2).getValues()[0];
     const keywords = inputData[0].toString();
-    const trigger_id = inputData[1].toString();
-    Analyze.faq(keywords, trigger_id);
+    const triggerId = inputData[1].toString();
+    Analyze.faq(keywords, triggerId);
   }
 }
 
+// eslint-disable-next-line no-unused-vars
 function initialize() {
   const book = SpreadsheetApp.getActiveSpreadsheet();
   const ui = SpreadsheetApp.getUi();

@@ -1,8 +1,8 @@
 export class Slack {
     static commandParamSplit(text: string): string[]{
-        var result = [];
-        var temp = '';
-        var oneLine = false;
+        const result = [];
+        let temp = '';
+        let oneLine = false;
         for (const char of text){
             if(char == ' '){
                 if(oneLine) {
