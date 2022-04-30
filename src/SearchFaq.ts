@@ -12,17 +12,17 @@ export class SearchFaq {
   }
 
   /** キーワード配列に合致するデータを探す */
-  static serachByKeyword(keywordArray: string[], target: string[][]): string[] {
-      const results: string[] = [];
+  static serachByKeyword(keywordArray: string[], targetData: string[][]): string[][] {
+      const results: string[][] = [];
       for(const keyword of keywordArray){
-        const datas = target.filter(data => data[0] == keyword);
+        const datas = targetData.filter(data => data[0] == keyword);
         Array.prototype.push.apply(results, datas);
       }
       return results;
   }
 
   /** 最頻出の値を探す */
-  static mostHits(target: string[]): string {
+  static mostHits(target: string[][]): string {
       const grouped = target.reduce((pre, cur) => {
           const id = cur[1];
           if (!pre.has(id)) pre.set(id, 0);

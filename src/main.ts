@@ -103,7 +103,7 @@ function searchFaq(q_text: string): string[] {
 
   // trigger_idからFAQを取得  
   const faqData = Spread.selectAllData(Sheets.FAQ);
-  const filterdFaq = faqData.filter(value => value[0] == trigger_id);
+  const filterdFaq = faqData.filter(value => value[FaqColumn.ID - 1] == trigger_id);
   if(filterdFaq.length == 0) {
     return [`not found(${trigger_id})`];
   }
