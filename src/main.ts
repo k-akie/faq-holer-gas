@@ -5,8 +5,21 @@ import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOption
 
 const CODE_BLOCK = "```";
 
+interface PostEvent {
+  queryString: string;
+  parameter: { [index: string]: string; };
+  parameters: { [index: string]: [string]; };
+  contentLenth: number;
+  postData: {
+    length: number;
+    type: string;
+    contents: string;
+    name: string;
+  };
+}
+
 /** 入り口(GAS Webアプリとしての入り口) */
-function doPost(e: any) {
+function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
     const response_url = e.parameter.response_url;
     const text = e.parameter.text.toString();
     ack(response_url); // いったんSlackに応答を返す
@@ -105,9 +118,5 @@ function ack(response_url: string, text = ''){
     muteHttpExceptions: true,
     payload: `{"text": "${text}", "response_type": "in_channel"}`
   };
-  try{
-    UrlFetchApp.fetch(response_url, params);
-  } catch(e){
-    console.log(e);
-  }
+  UrlFetchApp.fetch(response_url, params);
 }

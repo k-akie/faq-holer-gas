@@ -63,3 +63,6 @@ clasp pull
 
 ※claspについては以下を参考にしました
 https://dev.classmethod.jp/articles/vscode-clasp-setting/
+
+※Develop Apps Script using TypeScript  |  Google Developers
+https://developers.google.com/apps-script/guides/typescript
