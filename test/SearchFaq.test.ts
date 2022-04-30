@@ -33,6 +33,9 @@ describe("serachByKeyword", () => {
 });
 
 describe("mostHits", () => {
+    test("データなし", () => {
+        expect(SearchFaq.mostHits([])).toStrictEqual('');
+    });
     test("IDかぶりなし", () => {
         expect(SearchFaq.mostHits([['A', '1']])).toStrictEqual('1');
         expect(SearchFaq.mostHits([['A', '1'],['B', '2'],])).toStrictEqual('1');

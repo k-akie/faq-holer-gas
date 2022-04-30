@@ -21,22 +21,23 @@ interface PostEvent {
 /** 入り口(GAS Webアプリとしての入り口) */
 function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
     const response_url = e.parameter.response_url;
-    const text = e.parameter.text.toString();
+    const text = e.parameter.text;
+    const command = e.parameter.command;
     ack(response_url); // いったんSlackに応答を返す
 
     // https://api.slack.com/interactivity/slash-commands
-    if(e.parameter.command === '/faq-add') {
-      // FIXME ダブルクォーテーションは1単語扱いする
-      const input = Slack.commandParamSplit(text);
-      if(input.length != 3){
+    if(command === '/faq-add') {
+      const params = Slack.commandParamSplit(text);
+      if(params.length != 3){
         return ContentService.createTextOutput(
           "`/faq-add [質問文] [回答文] [キーワード(カンマ区切り)]`の形で入力してください\n\n"+
           `/faq-add ${text}`
           );
       }
-      const q_text = input[0];
-      const a_text = input[1];
-      const keywords = input[2];
+
+      const q_text = params[0];
+      const a_text = params[1];
+      const keywords = params[2];
 
       const trigger_id = e.parameter.trigger_id.toString();
       addFaq(q_text, a_text, keywords, trigger_id);
@@ -44,7 +45,7 @@ function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
       ack(response_url, `FAQを登録しました :writing_hand:${CODE_BLOCK}\nQ. ${q_text}\nA. ${a_text}\n(${keywords})${CODE_BLOCK}`);
     }
 
-    if(e.parameter.command === '/faq') {
+    if(command === '/faq') {
       const answerData = searchFaq(text);
       if(answerData.length < FaqColumn.ID){
         addHistory(text, 'not found');
@@ -55,6 +56,7 @@ function doPost(e: PostEvent): GoogleAppsScript.Content.TextOutput {
           );
           return ContentService.createTextOutput();
       }
+
       addHistory(text, answerData[FaqColumn.ID]);
       ack(response_url,
         `「${text}」という質問に近いFAQを紹介します :point_up:`+
@@ -94,12 +96,12 @@ function searchFaq(q_text: string): string[] {
   const keywordArray = SearchFaq.textAnalyze(q_text);
   const fullDatas = Spread.selectAllData(Sheets.CONTENT);
   const results = SearchFaq.serachByKeyword(keywordArray, fullDatas);
-  if(results.length == 0){
-    return ['not found'];
-  }
 
   // もっともヒットしているFAQ_IDを特定
   const trigger_id = SearchFaq.mostHits(results);
+  if(trigger_id.length == 0){
+    return ['not found'];
+  }
 
   // trigger_idからFAQを取得  
   const faqData = Spread.selectAllData(Sheets.FAQ);

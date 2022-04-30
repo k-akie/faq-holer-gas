@@ -23,13 +23,17 @@ export class SearchFaq {
 
   /** 最頻出の値を探す */
   static mostHits(target: string[][]): string {
+      if(target.length == 0){
+        return '';
+      }
+
       const grouped = target.reduce((pre, cur) => {
           const id = cur[1];
           if (!pre.has(id)) pre.set(id, 0);
           pre.set(id, Number(pre.get(id)) + 1);
           return pre;
-        }, new Map<string, number>());
-        const sorted = [...grouped.entries()].sort((a, b) => b[1] - a[1]);
-        return sorted[0][0];
+      }, new Map<string, number>());
+      const sorted = [...grouped.entries()].sort((a, b) => b[1] - a[1]);
+      return sorted[0][0];
   }
 }

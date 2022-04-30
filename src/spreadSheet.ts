@@ -63,18 +63,17 @@ export class Spread {
  * faqシート(コマンドや手で追加・更新がありうる) -> contentシート(スクリプトで上書き更新する)
  */
 function analyzeFaqAll(){
-  const contentSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(Sheets.CONTENT);
-  if (contentSheet == null) return; // FIXME エラーハンドリングする
-  contentSheet.getRange(2, 1, contentSheet.getLastRow(), 10).clear(); // 10は適当
-
-  const faqSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(Sheets.FAQ);
-  if (faqSheet == null) return; // FIXME エラーハンドリングする
   // varidation
+  const faqSheet = getSheetByName(Sheets.FAQ);
   const keys = faqSheet.getRange(2, FaqColumn.ID, faqSheet.getLastRow()-1, 1).getValues().map(item => item[0]);
   if(keys.length != new Set(keys).size){
     Browser.msgBox(`「${Sheets.FAQ}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
     return;
   }
+
+  // クリア
+  const contentSheet = getSheetByName(Sheets.CONTENT);
+  contentSheet.getRange(2, 1, contentSheet.getLastRow(), 10).clear(); // 10は適当
 
   for(var rowNo = 2; rowNo <= faqSheet.getLastRow(); rowNo++){
     const inputData = faqSheet.getRange(rowNo, FaqColumn.KEYWORDS, 1, 2).getValues()[0];
