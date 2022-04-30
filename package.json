@@ -4,13 +4,13 @@
   "description": "",
   "main": "main.js",
   "scripts": {
+    "lint": "npx eslint **/*.ts",
+    "lint:fix": "npx eslint --fix **/*.ts",
     "clean": "rimraf ./dist/*",
     "tsc": "npx tsc",
     "build": "npm-run-all clean tsc",
     "test": "jest",
-    "lint": "npx eslint **/*.ts",
-    "lint:fix": "npx eslint --fix **/*.ts",
-    "verify": "npm-run-all -p test build"
+    "verify": "npm-run-all -p build test"
   },
   "devDependencies": {
     "@google/clasp": "^2.4.1",
