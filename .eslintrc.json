@@ -1,0 +1,30 @@
+{
+    "env": {
+        "browser": true,
+        "es2019": true
+    },
+    "extends": [
+        "google"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": 2019,
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
+    "rules": {
+        "require-jsdoc": "off",
+        "valid-jsdoc": "off",
+        "max-len": ["error", { 
+            "code": 200, 
+            "tabWidth": 2, 
+            "ignoreComments": true,
+            "ignoreTrailingComments": true,
+            "ignoreUrls": true,
+            "ignoreTemplateLiterals": true,
+            "ignoreRegExpLiterals": true
+        }]
+    }
+}

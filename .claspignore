@@ -1,4 +1,3 @@
 **/**
-!main.js
-!sub.js
+!*.ts
 !appsscript.json
