@@ -1,4 +1,4 @@
-import { Slack } from "../src/slack";
+import { Slack } from "../src/Slack";
 
 
 describe('commandParamSplit', () => {

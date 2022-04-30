@@ -1,6 +1,6 @@
-import { Slack } from "./slack";
+import { Slack } from "./Slack";
 import { FaqColumn, Sheets, Spread } from "./spreadSheet";
-import { SearchFaq } from "./seachFaq";
+import { SearchFaq } from "./SearchFaq";
 import URLFetchRequestOptions = GoogleAppsScript.URL_Fetch.URLFetchRequestOptions;
 
 const CODE_BLOCK = "```";
