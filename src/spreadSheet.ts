@@ -1,4 +1,4 @@
-import { Analyze } from "./main";
+import {Analyze} from './main';
 
 const APP_NAME = 'FAQ-BOT';
 
@@ -6,7 +6,7 @@ export class Sheets {
   static FAQ = 'faq';
   static CONTENT = 'content';
   static HISTORY = 'history';
-  
+
   static all(): string[] {
     return [Sheets.FAQ, Sheets.CONTENT, Sheets.HISTORY];
   }
@@ -33,7 +33,7 @@ function onOpen() {
 /** シート取得 */
 function getSheetByName(sheetName: SheetName): GoogleAppsScript.Spreadsheet.Sheet {
   const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  if(sheet == null) throw Error(`「${sheetName}」というシートが見つかりません`);
+  if (sheet == null) throw Error(`「${sheetName}」というシートが見つかりません`);
   return sheet;
 }
 
@@ -64,11 +64,11 @@ export class Spread {
  * faqシート(コマンドや手で追加・更新がありうる) -> contentシート(スクリプトで上書き更新する)
  */
 // eslint-disable-next-line no-unused-vars
-function analyzeFaqAll(){
+function analyzeFaqAll() {
   // varidation
   const faqSheet = getSheetByName(Sheets.FAQ);
-  const keys = faqSheet.getRange(2, FaqColumn.ID, faqSheet.getLastRow()-1, 1).getValues().map(item => item[0]);
-  if(keys.length != new Set(keys).size){
+  const keys = faqSheet.getRange(2, FaqColumn.ID, faqSheet.getLastRow()-1, 1).getValues().map((item) => item[0]);
+  if (keys.length != new Set(keys).size) {
     Browser.msgBox(`「${Sheets.FAQ}」シートのIDは重複しないように設定してください`, Browser.Buttons.OK);
     return;
   }
@@ -77,7 +77,7 @@ function analyzeFaqAll(){
   const contentSheet = getSheetByName(Sheets.CONTENT);
   contentSheet.getRange(2, 1, contentSheet.getLastRow(), 10).clear(); // 10は適当
 
-  for(let rowNo = 2; rowNo <= faqSheet.getLastRow(); rowNo++){
+  for (let rowNo = 2; rowNo <= faqSheet.getLastRow(); rowNo++) {
     const inputData = faqSheet.getRange(rowNo, FaqColumn.KEYWORDS, 1, 2).getValues()[0];
     const keywords = inputData[0].toString();
     const triggerId = inputData[1].toString();
@@ -92,11 +92,11 @@ function initialize() {
 
   {
     const response = ui.alert(
-      `${APP_NAME}用のシートを作成します\n`+
+        `${APP_NAME}用のシートを作成します\n`+
       `${Sheets.all().join(', ')}\n\n`+
       '※既に同じ名前のシートがある場合、シートが再作成されます\n'
-      , ui.ButtonSet.OK_CANCEL);
-    if(response != ui.Button.OK){
+        , ui.ButtonSet.OK_CANCEL);
+    if (response != ui.Button.OK) {
       return;
     }
   }
@@ -107,13 +107,13 @@ function initialize() {
 
   {
     const sheets = book.getSheets();
-    if(sheets.length == Sheets.all.length){
+    if (sheets.length == Sheets.all.length) {
       return;
     }
     const response = ui.alert(`${APP_NAME}に不要なシートを削除しますか？`, ui.ButtonSet.YES_NO);
-    if(response == ui.Button.YES){
-      for(const sheet of sheets){
-        if(Sheets.all().includes(sheet.getName() as SheetName)){
+    if (response == ui.Button.YES) {
+      for (const sheet of sheets) {
+        if (Sheets.all().includes(sheet.getName() as SheetName)) {
           continue;
         }
         book.deleteSheet(sheet);
@@ -122,42 +122,42 @@ function initialize() {
   }
 }
 
-function createSheetFaq(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(Sheets.FAQ);
-    if(oldSheet){
-      book.deleteSheet(oldSheet);
-    }
-    
-    const sheet = book.insertSheet(Sheets.FAQ);
-    const header = ['質問文', '回答文', 'キーワード', 'ID', '登録日時'];
-    const dataRange = sheet.getRange(1, 1, 1, header.length);
-    dataRange.setValues([header]);
+function createSheetFaq(book: GoogleAppsScript.Spreadsheet.Spreadsheet) {
+  const oldSheet = book.getSheetByName(Sheets.FAQ);
+  if (oldSheet) {
+    book.deleteSheet(oldSheet);
+  }
 
-    sheet.getRange(2, FaqColumn.ADDDATE, 1000, 1).setNumberFormat("yyyy/mm/dd h:mm:ss");
+  const sheet = book.insertSheet(Sheets.FAQ);
+  const header = ['質問文', '回答文', 'キーワード', 'ID', '登録日時'];
+  const dataRange = sheet.getRange(1, 1, 1, header.length);
+  dataRange.setValues([header]);
+
+  sheet.getRange(2, FaqColumn.ADDDATE, 1000, 1).setNumberFormat('yyyy/mm/dd h:mm:ss');
 }
-function createSheetContent(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(Sheets.CONTENT);
-    if(oldSheet){
-      book.deleteSheet(oldSheet);
-    }
+function createSheetContent(book: GoogleAppsScript.Spreadsheet.Spreadsheet) {
+  const oldSheet = book.getSheetByName(Sheets.CONTENT);
+  if (oldSheet) {
+    book.deleteSheet(oldSheet);
+  }
 
-    const sheet = book.insertSheet(Sheets.CONTENT);
-    const header = ['keyword', 'ID'];
-    const dataRange = sheet.getRange(1, 1, 1, header.length);
-    dataRange.setValues([header]);
-    const protection = sheet.protect().setDescription('Sample protected sheet');
-    protection.removeEditors(protection.getEditors());
+  const sheet = book.insertSheet(Sheets.CONTENT);
+  const header = ['keyword', 'ID'];
+  const dataRange = sheet.getRange(1, 1, 1, header.length);
+  dataRange.setValues([header]);
+  const protection = sheet.protect().setDescription('Sample protected sheet');
+  protection.removeEditors(protection.getEditors());
 }
-function createSheetHistory(book: GoogleAppsScript.Spreadsheet.Spreadsheet){
-    const oldSheet = book.getSheetByName(Sheets.HISTORY);
-    if(oldSheet){
-      book.deleteSheet(oldSheet);
-    }
+function createSheetHistory(book: GoogleAppsScript.Spreadsheet.Spreadsheet) {
+  const oldSheet = book.getSheetByName(Sheets.HISTORY);
+  if (oldSheet) {
+    book.deleteSheet(oldSheet);
+  }
 
-    const sheet = book.insertSheet(Sheets.HISTORY);
-    const header = ['質問文', '回答ID', '質問日時'];
-    const dataRange = sheet.getRange(1, 1, 1, header.length);
-    dataRange.setValues([header]);
+  const sheet = book.insertSheet(Sheets.HISTORY);
+  const header = ['質問文', '回答ID', '質問日時'];
+  const dataRange = sheet.getRange(1, 1, 1, header.length);
+  dataRange.setValues([header]);
 
-    sheet.getRange(2, 3, 1000, 1).setNumberFormat("yyyy/mm/dd h:mm:ss");
+  sheet.getRange(2, 3, 1000, 1).setNumberFormat('yyyy/mm/dd h:mm:ss');
 }
