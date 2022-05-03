@@ -10,6 +10,7 @@
     "tsc": "npx tsc",
     "build": "npm-run-all clean tsc",
     "test": "jest",
+    "test:coverage": "jest --coverage",
     "verify": "npm-run-all -p build test"
   },
   "devDependencies": {
