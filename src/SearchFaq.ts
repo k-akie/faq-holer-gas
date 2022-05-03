@@ -33,10 +33,13 @@ export class SearchFaq {
         }
 
         // 末尾にあったら助詞とみなす
-        const particleSuf = /(.+)(ので)|(から)|(まで)|[もはがでを]$/g;
+        const particleSuf = /((ので)|(から)|(まで)|[もはがでを])$/g;
         const matchedSuf = keyword.match(particleSuf);
         if (matchedSuf) {
-          result.push(keyword.replace(particleSuf, ''));
+          const preWord = keyword.replace(particleSuf, '');
+          if (preWord.length > 1) {
+            result.push(preWord);
+          }
           if (!onlyNoun) {
             result.push(matchedSuf[0]);
           }
