@@ -6,7 +6,7 @@ export class SearchFaq {
     // https://takuya-1st.hatenablog.jp/entry/2016/04/02/145017
     const r = /[一-龠]+|[ぁ-ん]+|[ァ-ヴー]+|[a-zA-Z0-9\-]+|[ａ-ｚＡ-Ｚ０-９]+/g;
     const keywordArray = text.match(r);
-    if (keywordArray == null) return []; // FIXME エラーハンドリングする
+    if (keywordArray == null) return [];
     return keywordArray;
   }
 

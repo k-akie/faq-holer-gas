@@ -49,6 +49,9 @@ describe('textAnalyze: 助詞を除いて抽出', () => {
   ])('かなが続くとき(%s)', (input, expected) => {
     expect(SearchFaq.textAnalyze(input, true)).toStrictEqual(expected);
   });
+  test('デフォルト値', () => {
+    expect(SearchFaq.textAnalyze('地球は丸い')).toStrictEqual(['地球', '丸い']);
+  });
 });
 
 describe('serachByKeyword', () => {
